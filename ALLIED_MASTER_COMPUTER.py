@@ -74,13 +74,12 @@ MESSAGE = [
     ]
 
 def model() -> str:#model
-    recent_messages = [MESSAGE[0]]+MESSAGE[1:][-2:]
-    
+     
     response=client.chat.completions.create(
 
         model = f"openrouter:{os.getenv("model")}",
 
-        messages = recent_messages,
+        messages = MESSAGE,
 
         temperature = 0.7,
 
