@@ -64,10 +64,10 @@ Prerequisites
 
 1. Clone the repository
 
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
-cd YOUR_REPOSITORY
+git clone https://github.com/FAIZALKHAN786-glich/ALLIED_MASTER_CONPUTER.git
+cd ALLIED_MASTER_COMPUTER
 
-Replace "YOUR_USERNAME" and "YOUR_REPOSITORY" with your actual GitHub details.
+Replace "FAIZALKHAN786-glitch" and "ALLIED_MASTER_COMPUTER" with your actual GitHub details.
 
 2. Create a virtual environment
 
