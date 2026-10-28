@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 import json
 
-load_dotenv("C:/faizal/.env.faizal",encoding="utf-8")
+load_dotenv(".env",encoding="utf-8")
 
 client = ai.Client(provider_configs=
 {'openrouter':
