@@ -64,7 +64,7 @@ Prerequisites
 
 1. Clone the repository
 
-git clone https://github.com/FAIZALKHAN786-glich/ALLIED_MASTER_CONPUTER.git
+git clone https://github.com/FAIZALKHAN786-glich/ALLIED_MASTER_COMPUTER.git
 cd ALLIED_MASTER_COMPUTER
 
 Replace "FAIZALKHAN786-glitch" and "ALLIED_MASTER_COMPUTER" with your actual GitHub details.
