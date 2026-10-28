@@ -16,10 +16,14 @@ Fortunately, mine is currently more interested in executing Python than destroyi
 
 Every supercomputer has to start somewhere.
 
-<br>""Python" (https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)" (https://www.python.org/)
+""Python" (https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)" (https://www.python.org/)
 ""AISuite" (https://img.shields.io/badge/LLM-AISuite-6C5CE7?style=for-the-badge)" (https://github.com/andrewyng/aisuite)
-""OpenRouter" (https://img.shields.io/badge/Models-OpenRouter-black?style=for-the-badge)" (https://openrouter.ai/)
-""Status" (https://img.shields.io/badge/Status-Experimental-orange?style=for-the-badge)" (https://github.com/FAIZALKHAN786-glitch/ALLIED_MASTER_COMPUTER)
+""OpenRouter" (https://img.shields.io/badge/Model-OpenRouter-black?style=for-the-badge)" (https://openrouter.ai/)
+"Status" (https://img.shields.io/badge/Status-Experimental-orange?style=for-the-badge)
+
+Generate. Execute. Capture. Interpret. Respond.
+
+</div>
 
 Generate. Execute. Capture. Interpret. Respond.
 
