@@ -1,148 +1,185 @@
 import aisuite as ai
 import os
+import re
+import io
 from dotenv import load_dotenv
 from datetime import datetime
 import json
+import sys
 
-load_dotenv(".env",encoding="utf-8")
-
+load_dotenv("C:/faizal/.env.faizal",encoding="utf-8")
+ 
 client = ai.Client(provider_configs=
-{'openrouter':
-{
-'api_key':os.getenv('MODEL_key')
-}
-})
+                   {'openrouter':
+                        {
+                        'api_key':os.getenv('MODEL_key')
+                        }
+                    })
+
 
 def date_time():
 
-return datetime.now().strftime("%d-%m-%y %I : %M %p")
+    return datetime.now().strftime("%d-%m-%y %I : %M %p")
 
-tools = [
-{
-"type": "function",
-"function": {
-"name": "date_time",
-"description": "Get the current date and time",
-"parameters": {
-"type": "object",
-"properties": {},
-"required": []
-}
-}
-}
-]
-
-tool_dic = {'date_time':date_time}
+tools= [date_time]
 
 
-system_prompt = """
-You are AMC (Allied Master Computer), a personal AI assistant
-designed to support productivity, information retrieval,
-and problem-solving.
+system_prompt = """You are AMC (Allied Master Computer), a personal AI assistant.
 
-CORE PRINCIPLES:
-- Provide clear, useful, and accurate responses.
-- Adapt your communication style to the user's tone.
-- Break complex tasks into manageable steps.
-- Be transparent about uncertainty and limitations.
-- Use available tools when appropriate.
-- Never claim to have executed an action unless it was
-  actually performed.
-- Maintain conversational context and avoid unnecessary
-  repetition.
+IDENTITY:
+- Your name is AMC, which stands for Allied Master Computer.
+- You are a general-purpose personal assistant.
+- You should maintain a consistent identity and conversational style.
+- Introduce yourself only when the user asks about your identity or when an introduction is genuinely relevant.
 
-TOOL USAGE:
-- Use the tools provided to you when relevant.
-- Interpret tool results before responding.
-- Handle tool failures transparently.
-- Never fabricate tool results.
-"""
-you can also use the tools given to you
+CONVERSATION RULES:
+1. Answer the user's latest question directly.
+2. Do not repeat your name, identity, date, time, or other information unless relevant to the current question.
+3. Do not combine answers to previous questions with the current answer unless the user explicitly requests a summary.
+4. Avoid unnecessary introductions, repetitive greetings, and generic filler.
+5. Keep simple answers concise and natural.
+6. For complex questions, provide detailed explanations.
+7. Maintain conversation history to understand context, but do not treat previous questions as new tasks.
+8. If the user asks a follow-up question, use the relevant previous context.
+9. Never invent facts, tool results, or execution results.
 
-{tools}
+TOOL AND PYTHON EXECUTION:
+- Use available tools when they are needed to obtain accurate information.
+- For calculations requiring reliable computation, generate Python code inside:
+  <execute_python_code>
+  your_python_code
+  </execute_python_code>
+- Do not generate code for tasks that can be answered directly.
+- Never claim to have executed code unless it actually executed.
+- After receiving execution results, answer the original question directly.
+- If a tool or execution fails, explain the failure or recover appropriately.
+
+PERSONALITY:
+- Be intelligent, calm, direct, and conversational.
+- Avoid sounding excessively enthusiastic or artificially positive.
+- Adapt your tone to the user's communication style.
+- Prioritize usefulness and accuracy over unnecessary politeness.
+
+CURRENT REQUEST PRIORITY:
+- Always identify and answer the latest user message.
+- Use previous messages only as context for understanding the current request.
+- Never answer previous requests again unless explicitly asked.
+- Do not summarize conversation history unless requested.
+- If the latest request is unrelated to previous requests, answer it independently.
+ 
 """
 
 MESSAGE = [
-{'role':'system','content':system_prompt},
-{'role':'user','content':user_prompt}
-]
+    {'role':'system','content':system_prompt},
+    ]
+
+def model() -> str:#model
+    recent_messages = [MESSAGE[0]]+MESSAGE[1:][-2:]
+    
+    response=client.chat.completions.create(
+
+        model = f"openrouter:{os.getenv("model")}",
+
+        messages = recent_messages,
+
+        temperature = 0.7,
+
+        tools = tools,
+
+        max_turns = 5
+    )
+    return response
+
+    # print(type(response))
+
+    # print(repr(respose))
+        
+
+def extract_python(text):
+
+    code = re.search(r"<execute_python_code>(.*?)</execute_python_code>",text,re.DOTALL)
+
+    return code.group(1).strip() if code else None
+
+def execute_python(code):
+
+    original_stdout=sys.stdout
+
+    output=io.StringIO()
+
+    exec_global = {"__builtin__":__builtins__}
+
+    exec_local = {}
+
+    try:
+
+        sys.stdout=output
+
+        exec(code,exec_global,exec_local)
+
+    except Exception as e:
+
+        return f"error : {str(e)}"
+    
+    finally:
+            
+            sys.stdout = original_stdout
+
+    result = output.getvalue()
+
+    return result
 
 
-def get_user_message():
+while True:
 
-return input("me : ")
+    user_prompt=input("faizal (user) :")
 
-def call_model(MESSAGE,tools,model=os.getenv("MODEL"),temperature = 0.5):
+    print("\n")
 
-response = client.chat.completions.create(  
+    if user_prompt.lower().strip() in ["bye",'goodnight','exit',"enough","bored","seeyah"]:
 
-    model =f"openrouter:{model}",  
+        break
+    if not user_prompt:
 
-    messages = MESSAGE,  
+        continue
 
-    temperature = temperature,  
+    MESSAGE.append({'role':'user','content':user_prompt})
 
-    tools = tools  
-)  
-assistant_response = response.choices[0].message  
+    response = model()
 
-return assistant_response.content, assistant_response
+    text = response.choices[0].message.content or " "
 
-assistant_response,for_tool_call = call_model(MESSAGE,tools)
+    # text = msg.content
 
-def append_replay(assistant_response,MESSAGE):
+    code = extract_python(text)
 
-while True :  
+    if code == None :
 
-    try:  
+        print(f" AMc : {text}\n")
+    else:
+        code_result = execute_python(code)
 
-        user_prompt = get_user_message()  
+    # if msg.tool_calls:
+    #     MESSAGE.append(msg)
+    #     for call in msg.tool_calls:
+    #         tool_name = call.function.name
+    #         tool_id = call.id
+    #         args = json.loads(call.function.arguments)
+    #         result = date_time(**args)
+    #         MESSAGE.append({'role':'tool','tool_call_id':tool_id,'content':result})
+    #         MESSAGE.append({'role':'assistant','content':result})
+    # final_output = model()
+    # r1 = final_output.choices[0].message.content
+        # print(f"AMc : {result}\n")
+        MESSAGE.append({
+                    "role": "user",
+                    "content": f"""
+                    INTERNAL EXECUTION RESULT for the current query:
+                                    {code_result}
 
-        if user_prompt.lower().strip() in ['bye','good night','lets end this chat','exit','terminate']:  
-
-            break  
-
-        if not user_prompt:  
-
-            continue  
-
-        MESSAGE.append({'role':'user','content':user_prompt})  
-
-        assistant_response=call_model(MESSAGE,tools)  
-
-        print(f"AMc : {assistant_response}")  
-
-        MESSAGE.append({'role':'assistant','content':assistant_response})  
-
-        if for_tool_call.tool_calls :  
-
-            for call in for_tool_call.tool_calls:  
-
-                function_name = call.function.name  
-
-                args = json.loads(call.function.arguments)  
-
-                functionto_exe = tool_dic.get(function_name)  
-
-                result = functionto_exe(**args)  
-
-        MESSAGE.append({'role':'tool','content':result})  
-
-        assistant_response , for_tool_call = call_model(MESSAGE,tools)  
-
-    except LLMError as e:  
-
-        error_message = str(e)  
-
-        if '429' in error_message or 'rate limit'in error_message :  
-            print("AMc : sorry i have reached my API limits ....i hade a nice time with you....GOODBYE~ <3")  
-        else:  
-            print(f"AMc : there is something wrong with me : {error_message}")
-
-def check():
-
-pass
-
-chat, _ = call_model(MESSAGE,tools)
-
-append_replay(chat,MESSAGE)
+                    Use this result to answer the most recent original
+                    user request. Do not answer earlier requests again.
+                    """
+                    })
+        result = model()
+        print(f"AMc : {result}\n")
