@@ -67,7 +67,7 @@ MESSAGE = [
 {'role':'user','content':user_prompt}
 ]
 
-#user_prompt = input("me :")
+
 def get_user_message():
 
 return input("me : ")
