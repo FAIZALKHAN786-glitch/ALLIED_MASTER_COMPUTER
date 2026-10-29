@@ -417,10 +417,6 @@ Potential areas for contribution include:
 
 A license has not been specified in this README.
 
-If you intend to distribute AMC as an open-source project, consider adding an appropriate "LICENSE" file to the repository and identifying it here.
-
----
-
 <div align="center">☠️ FINAL TRANSMISSION
 
 The ambition is artificial intelligence.
