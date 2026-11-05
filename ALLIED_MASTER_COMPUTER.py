@@ -1,13 +1,20 @@
+# this is a personal project of mine
+# as im currently learning LLMs and AGENTIC WORKFLOW
+# i have a lot to learn and my philosophy 
+# is that it nothing beats learning while building 
+# so 
+# i build it with what all i know and ofc im working to improve it everyday by 1% by learning new new concepts and the code 
+# in the comment lines ?.......nah im not gonna erase it 
+# as it shows how i approached the problem and how i came up with a optimised solution by learning new things its like a lookback history
+
 import aisuite as ai
 import os
-import re
-import io
+import re 
 from dotenv import load_dotenv
 from datetime import datetime
-import json
-import sys
+import subprocess
 
-load_dotenv("C:/faizal/.env.faizal",encoding="utf-8")
+load_dotenv(encoding="utf-8")
  
 client = ai.Client(provider_configs=
                    {'openrouter':
@@ -24,60 +31,17 @@ def date_time():
 tools= [date_time]
 
 
-system_prompt = """You are AMC (Allied Master Computer), a personal AI assistant.
-
-IDENTITY:
-- Your name is AMC, which stands for Allied Master Computer.
-- You are a general-purpose personal assistant.
-- You should maintain a consistent identity and conversational style.
-- Introduce yourself only when the user asks about your identity or when an introduction is genuinely relevant.
-
-CONVERSATION RULES:
-1. Answer the user's latest question directly.
-2. Do not repeat your name, identity, date, time, or other information unless relevant to the current question.
-3. Do not combine answers to previous questions with the current answer unless the user explicitly requests a summary.
-4. Avoid unnecessary introductions, repetitive greetings, and generic filler.
-5. Keep simple answers concise and natural.
-6. For complex questions, provide detailed explanations.
-7. Maintain conversation history to understand context, but do not treat previous questions as new tasks.
-8. If the user asks a follow-up question, use the relevant previous context.
-9. Never invent facts, tool results, or execution results.
-
-TOOL AND PYTHON EXECUTION:
-- Use available tools when they are needed to obtain accurate information.
-- For calculations requiring reliable computation, generate Python code inside:
-  <execute_python_code>
-  your_python_code
-  </execute_python_code>
-- Do not generate code for tasks that can be answered directly.
-- Never claim to have executed code unless it actually executed.
-- After receiving execution results, answer the original question directly.
-- If a tool or execution fails, explain the failure or recover appropriately.
-
-PERSONALITY:
-- Be intelligent, calm, direct, and conversational.
-- Avoid sounding excessively enthusiastic or artificially positive.
-- Adapt your tone to the user's communication style.
-- Prioritize usefulness and accuracy over unnecessary politeness.
-
-CURRENT REQUEST PRIORITY:
-- Always identify and answer the latest user message.
-- Use previous messages only as context for understanding the current request.
-- Never answer previous requests again unless explicitly asked.
-- Do not summarize conversation history unless requested.
-- If the latest request is unrelated to previous requests, answer it independently.
- 
-"""
+system_prompt = os.getenv("system_prompt")
 
 MESSAGE = [
     {'role':'system','content':system_prompt},
-    ]
+    ] #0
 
 def model() -> str:#model
-     
+
     response=client.chat.completions.create(
 
-        model = f"openrouter:{os.getenv("model")}",
+        model = f"openrouter:{os.getenv('model')}",
 
         messages = MESSAGE,
 
@@ -88,6 +52,12 @@ def model() -> str:#model
         max_turns = 5
     )
     return response
+
+def trim_messages(Max,MESSAGE):
+
+    MESSAGE = [MESSAGE[0]] + MESSAGE[1:][-Max:]
+
+    return MESSAGE
 
     # print(type(response))
 
@@ -102,31 +72,83 @@ def extract_python(text):
 
 def execute_python(code):
 
-    original_stdout=sys.stdout
+    # with tempfile.TemporaryDirectory(prefix="amc_") as tempfile:
 
-    output=io.StringIO()
+    #     code_path = os.path.join(temp_file,"code.py")
 
-    exec_global = {"__builtin__":__builtins__}
+    #     with open(code_path,"w") as f:
 
-    exec_local = {}
+    #         f.write(code)
 
-    try:
+    command = ['docker','run','--rm','--network','none','--memory',
+                   '128m','--cpus','0.5','--pids-limit','32','--read-only',
+                   '--tmpfs','/tmp:rw,noexec,nosuid,size=16m',
+                   '--cap-drop','ALL','--security-opt','no-new-privileges',
+                   '--user','10001:10001','amc-sandbox']
+    if code != None:
 
-        sys.stdout=output
+        try:
+        
+            result = subprocess.run(command,input=code,capture_output=True,text=True,timeout=10)
 
-        exec(code,exec_global,exec_local)
+            return {
+                "stdout":result.stdout} 
+        
+        except subprocess.TimeoutExpired:
 
-    except Exception as e:
+            return {"stdout": ""}
+                
+        
+        except FileNotFoundError :
 
-        return f"error : {str(e)}"
+            return {
+                "stdout":""}
+        
+        except Exception as e:
+
+            return {
+                "stdout":"",
+                }
+    else:
+        return {
+                "stdout":"",
+                }    
+    # with tempfile.TemporaryDirectory(prefix='amc_') as temp_file :
+
+    #     code_path = os.path.join(temp_file,"code.py")
+
+    #     with open(code_path,"w") as f:
+
+    #         f.write(code)
+
+    # result = subprocess.run(["docker","run","-rm","--network=none",])
+
+
+    # original_stdout=sys.stdout
+
+    # output=io.StringIO()
+
+    # exec_global = {"__builtin__":__builtins__}
+
+    # exec_local = {}
+
+    # try:
+
+    #      sys.stdout=output
+
+    #      exec(code,exec_global,exec_local)
+
+    # except Exception as e:
+
+    #      return f"error : {str(e)}"
     
-    finally:
+    # finally:
             
-            sys.stdout = original_stdout
+    #      sys.stdout = original_stdout
 
-    result = output.getvalue()
+    # result = output.getvalue()
 
-    return result
+    # return result
 
 
 while True:
@@ -142,11 +164,13 @@ while True:
 
         continue
 
-    MESSAGE.append({'role':'user','content':user_prompt})
+    MESSAGE.append({'role':'user','content':user_prompt}) #1
 
     response = model()
 
     text = response.choices[0].message.content or " "
+
+    # MESSAGE.append({'role':'assistant','content':response}) #2
 
     # text = msg.content
 
@@ -169,16 +193,21 @@ while True:
     #         MESSAGE.append({'role':'assistant','content':result})
     # final_output = model()
     # r1 = final_output.choices[0].message.content
-        # print(f"AMc : {result}\n")
-        MESSAGE.append({
-                    "role": "user",
-                    "content": f"""
-                    INTERNAL EXECUTION RESULT for the current query:
-                                    {code_result}
-
-                    Use this result to answer the most recent original
-                    user request. Do not answer earlier requests again.
-                    """
-                    })
-        result = model()
         print(f"AMc : {result}\n")
+        MESSAGE.append({
+                     "role": "user",
+                     "content": f"""
+                     INTERNAL EXECUTION RESULT for the current query:
+                                     {code_result}
+
+                     Use this result to answer the most recent original
+                     user request. Do not answer earlier requests again.
+                     make it short as possible
+                     and doesnt need to explain just format it nicely
+                     """
+                    })#2
+        result = model()
+        print(f"AMc : {result}")
+        print('\n')
+        trim_messages(2)
+    
