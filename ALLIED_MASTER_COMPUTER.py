@@ -195,7 +195,7 @@ while True:
     # r1 = final_output.choices[0].message.content
         #print(f"AMc : {result}\n")
         MESSAGE.append({
-                     "role": "user",
+                     "role": "tool",
                      "content": f"""
                      INTERNAL EXECUTION RESULT for the current query:
                                      {code_result}
