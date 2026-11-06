@@ -193,7 +193,7 @@ while True:
     #         MESSAGE.append({'role':'assistant','content':result})
     # final_output = model()
     # r1 = final_output.choices[0].message.content
-        print(f"AMc : {result}\n")
+        #print(f"AMc : {result}\n")
         MESSAGE.append({
                      "role": "user",
                      "content": f"""
