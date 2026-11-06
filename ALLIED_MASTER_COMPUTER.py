@@ -53,9 +53,9 @@ def model() -> str:#model
     )
     return response
 
-def trim_messages(Max,MESSAGE):
+def trim_messages(MAX,MESSAGE):
 
-    MESSAGE = [MESSAGE[0]] + MESSAGE[1:][-Max:]
+    MESSAGE = [MESSAGE[0]] + MESSAGE[1:][-MAX:]
 
     return MESSAGE
 
